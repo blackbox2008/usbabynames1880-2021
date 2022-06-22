@@ -7,6 +7,8 @@ There are many things you might want to do with the dataset:
 • Determine the relative rank of a name
 • Determine the most popular names in each year or the names whose popularity
   has advanced or declined the most
+• Track the changing trends in letters of the names(Initial, Central, Final letters)
+  (First letter changing trends are analyzed in this project)
 
 
 **How the analysis is fulfilled?
@@ -185,5 +187,36 @@ year
 2007  222  102
 2008  233  108
 
+ ** Track the changing trends in the first letters of the names
+ 
+>>>first_letters = names.name.map(lambda x: x[0])
+>>>first_letters.name = 'first letter'
 
+Initially, all of the births in the full dataset are aggregated by year, sex, and first letter:
+>>>first_letter_pivot_table = names.pivot_table('births', index=first_letters, columns=['sex', 'year'], aggfunc=sum)
+we choose a sample of 3 years from the start, middle and end of the time interval (1921, 1971, 2021).
+
+>>>first_letter_subtable = first_letter_pivot_table.reindex(columns=[1921, 1971, 2021], level='year')
+>>>letter_proportion = first_letter_subtable / first_letter_subtable.sum()
+Then plot the bar chart to see the first letter changing trends for all letters of the English alphabet (a-z)
+for the 3 years mentiond.
+
+>>>fig, axes = plt.subplots(2, 1, figsize=(15, 12))
+>>>letter_proportion['M'].plot(kind='bar', rot=0, ax=axes[0], title='Male')
+>>>letter_proportion['F'].plot(kind='bar', rot=0, ax=axes[1], title='Female',
+legend=False)
+
+Next, we calculate the first letter proportion for the full dataset
+and this time plot, for instance, changing trends of 3 letters in the whole time interval (1880-2021)
+As we see from the plots, the letter "W" for males and "M" for females has significantly dropped in use.
+Letter "D" has a rising-falling pattern form males and the letter "E" falling-rising for females.
+and the letter "A" has a steady-falling-rising pattern for both males and females and started falling from around 2016
+
+>>>letter_proportion2 = first_letter_pivot_table / first_letter_pivot_table.sum() #in whole data
+>>>fig, axes = plt.subplots(2, 1, figsize=(15, 12))
+>>>density_ts_male = letter_proportion2.loc[['A', 'D', 'W'], 'M'].T #transposing to make each column a time series
+>>>density_ts_female = letter_proportion2.loc[['A', 'E', 'M'], 'F'].T
+>>>density_ts_male.plot(ax=axes[0], title='Male')
+>>>density_ts_female.plot(ax=axes[1], title='Female',
+legend=True)
 (To be continued)

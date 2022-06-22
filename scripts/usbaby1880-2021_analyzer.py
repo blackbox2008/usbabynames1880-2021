@@ -13,6 +13,7 @@ Created on Sun Jun 19 08:25:46 2022
 """
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 years = range(1880, 2022)
 file_pieces = []
@@ -84,3 +85,22 @@ proportion_cumsum_per_year_and_sex = grouped_names.apply(cumsum_calc)
 diversity = proportion_cumsum_per_year_and_sex.unstack('sex')
 
 diversity.plot(title="Number of popular names in top half")
+
+# First Letter changing through time
+first_letters = names.name.map(lambda x: x[0])
+first_letters.name = 'first letter'
+first_letter_pivot_table = names.pivot_table('births', index=first_letters, columns=['sex', 'year'], aggfunc=sum)
+first_letter_subtable = first_letter_pivot_table.reindex(columns=[1921, 1971, 2021], level='year')
+letter_proportion = first_letter_subtable / first_letter_subtable.sum()
+fig, axes = plt.subplots(2, 1, figsize=(15, 12))
+letter_proportion['M'].plot(kind='bar', rot=0, ax=axes[0], title='Male')
+letter_proportion['F'].plot(kind='bar', rot=0, ax=axes[1], title='Female',
+legend=False)
+
+letter_proportion2 = first_letter_pivot_table / first_letter_pivot_table.sum() #in whole data
+fig, axes = plt.subplots(2, 1, figsize=(15, 12))
+density_ts_male = letter_proportion2.loc[['A', 'D', 'W'], 'M'].T #transposing to make each column a time series
+density_ts_female = letter_proportion2.loc[['A', 'E', 'M'], 'F'].T
+density_ts_male.plot(ax=axes[0], title='Male')
+density_ts_female.plot(ax=axes[1], title='Female',
+legend=True)
